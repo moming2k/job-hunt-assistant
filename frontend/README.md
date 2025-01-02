@@ -127,3 +127,29 @@ export default tseslint.config({
            run: |
              ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY $EC2_USER@$EC2_HOST 'cd /path/to/your/project && git pull && npm install && npm run build && pm2 restart ecosystem.config.js'
    ```
+
+## Docker Instructions
+
+### Building and Running the Frontend using Docker
+
+1. **Build the Docker image**:
+   ```bash
+   docker build -t frontend:latest .
+   ```
+
+2. **Run the Docker container**:
+   ```bash
+   docker run -p 5000:5000 frontend:latest
+   ```
+
+### Using Docker Compose to Manage the Frontend Service
+
+1. **Start the service**:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Stop the service**:
+   ```bash
+   docker-compose down
+   ```
