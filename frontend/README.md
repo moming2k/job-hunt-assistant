@@ -48,3 +48,82 @@ export default tseslint.config({
   },
 })
 ```
+
+## Deployment Instructions
+
+### Setting up pm2 and Deploying to EC2
+
+1. **Install pm2**:
+   ```bash
+   npm install pm2 -g
+   ```
+
+2. **Create pm2 ecosystem file**:
+   Create a file named `ecosystem.config.js` in the root of your project with the following content:
+   ```js
+   module.exports = {
+     apps: [
+       {
+         name: 'frontend',
+         script: 'npm',
+         args: 'start',
+         env: {
+           NODE_ENV: 'production',
+         },
+       },
+     ],
+   };
+   ```
+
+3. **Deploy to EC2**:
+   - SSH into your EC2 instance.
+   - Clone your repository.
+   - Install dependencies and build the project:
+     ```bash
+     npm install
+     npm run build
+     ```
+   - Start the application using pm2:
+     ```bash
+     pm2 start ecosystem.config.js
+     ```
+
+### Configuring GitHub Actions Workflow
+
+1. **Create GitHub Actions workflow file**:
+   Create a file named `deploy.yml` in the `.github/workflows` directory with the following content:
+   ```yaml
+   name: Deploy to EC2
+
+   on:
+     push:
+       branches:
+         - main
+
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+
+       steps:
+         - name: Checkout code
+           uses: actions/checkout@v2
+
+         - name: Set up Node.js
+           uses: actions/setup-node@v2
+           with:
+             node-version: '14'
+
+         - name: Install dependencies
+           run: npm install
+
+         - name: Build project
+           run: npm run build
+
+         - name: Deploy to EC2
+           env:
+             SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+             EC2_HOST: ${{ secrets.EC2_HOST }}
+             EC2_USER: ${{ secrets.EC2_USER }}
+           run: |
+             ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY $EC2_USER@$EC2_HOST 'cd /path/to/your/project && git pull && npm install && npm run build && pm2 restart ecosystem.config.js'
+   ```
